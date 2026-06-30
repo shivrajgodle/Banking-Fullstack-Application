@@ -1,0 +1,41 @@
+<div class="animate-fade-in">
+      <div class="page-header flex-between">
+        <div>
+          <h1>Notifications</h1>
+          <p>{{ unreadCount() > 0 ? unreadCount() + ' unread' : 'All caught up!' }}</p>
+        </div>
+        @if (unreadCount() > 0) {
+          <button class="btn btn-secondary" (click)="markAllRead()">Mark All Read</button>
+        }
+      </div>
+
+      @if (loading()) {
+        <div class="flex-center" style="padding:64px">
+          <span class="spinner" style="width:36px;height:36px;border-width:3px"></span>
+        </div>
+      } @else if (notifications().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">🔔</div>
+          <h3>No notifications</h3>
+          <p>You're all caught up!</p>
+        </div>
+      } @else {
+        <div class="notif-list stagger">
+          @for (n of notifications(); track n.id) {
+            <div class="notif-item" [class.unread]="!n.read">
+              <div class="notif-icon" [class]="'notif-' + n.type.toLowerCase()">
+                {{ getIcon(n.type) }}
+              </div>
+              <div class="notif-body">
+                <div class="notif-title">{{ n.title }}</div>
+                <div class="notif-message">{{ n.message }}</div>
+                <div class="notif-time">{{ n.createdAt | date:'dd MMM yyyy, hh:mm a' }}</div>
+              </div>
+              @if (!n.read) {
+                <div class="unread-dot"></div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>

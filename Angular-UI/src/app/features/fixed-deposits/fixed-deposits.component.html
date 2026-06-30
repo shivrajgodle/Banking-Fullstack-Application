@@ -1,0 +1,97 @@
+<div class="animate-fade-in">
+      <div class="page-header flex-between">
+        <div><h1>Fixed Deposits</h1><p>6.5% annual interest with quarterly compounding</p></div>
+        <button class="btn btn-primary" (click)="showCreate.set(true)">Create FD</button>
+      </div>
+
+      @if (loading()) {
+        <div class="flex-center" style="padding:64px"><span class="spinner" style="width:36px;height:36px;border-width:3px"></span></div>
+      } @else if (fds().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">🔒</div>
+          <h3>No Fixed Deposits</h3>
+          <p>Open an FD to earn 6.5% p.a. with compound interest</p>
+          <button class="btn btn-primary" (click)="showCreate.set(true)">Open First FD</button>
+        </div>
+      } @else {
+        <div class="fd-grid stagger">
+          @for (fd of fds(); track fd.id) {
+            <div class="fd-card">
+              <div class="fd-header">
+                <div>
+                  <div class="fd-number text-mono">{{ fd.fdNumber }}</div>
+                  <div class="fd-account" style="font-size:0.8rem;color:var(--text-muted)">{{ fd.accountNumber }}</div>
+                </div>
+                <span class="badge" [class]="fd.status === 'ACTIVE' ? 'badge-success' : 'badge-muted'">{{ fd.status }}</span>
+              </div>
+              <div class="fd-amounts">
+                <div>
+                  <span class="fd-label">Principal</span>
+                  <span class="fd-value">{{ fd.principalAmount | currency:'INR':'symbol':'1.0-0' }}</span>
+                </div>
+                <div class="fd-arrow">→</div>
+                <div>
+                  <span class="fd-label">Maturity Amount</span>
+                  <span class="fd-value text-gold">{{ fd.maturityAmount | currency:'INR':'symbol':'1.0-0' }}</span>
+                </div>
+              </div>
+              <div class="fd-meta">
+                <span>{{ fd.interestRate * 100 | number:'1.2-2' }}% p.a.</span>
+                <span>{{ fd.tenureMonths }} months</span>
+                <span>Matures: {{ fd.maturityDate | date:'dd MMM yyyy' }}</span>
+                @if (fd.autoRenew) { <span class="badge badge-info">Auto-Renew</span> }
+              </div>
+              @if (fd.status === 'ACTIVE') {
+                <button class="btn btn-danger btn-sm" style="margin-top:12px;width:100%" (click)="confirmClose(fd)">
+                  Close Prematurely
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (showCreate()) {
+      <div class="modal-backdrop" (click)="showCreate.set(false)">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="flex-between mb-lg">
+            <h3 class="modal-title" style="margin:0">Create Fixed Deposit</h3>
+            <button class="btn btn-ghost btn-sm" (click)="showCreate.set(false)">✕</button>
+          </div>
+          <div class="fd-info-box">
+            Interest Rate: <strong>6.5% p.a.</strong> (Quarterly Compounding)
+          </div>
+          <form [formGroup]="createForm" (ngSubmit)="createFd()">
+            <div class="form-group">
+              <label class="form-label">Source Account</label>
+              <select class="form-control" formControlName="accountNumber">
+                @for (acc of accounts(); track acc.id) {
+                  <option [value]="acc.accountNumber">{{ acc.accountNumber }} ({{ acc.balance | currency:'INR':'symbol':'1.0-0' }})</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Principal Amount (min ₹1,000)</label>
+              <input type="number" class="form-control" formControlName="principalAmount" placeholder="50000"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tenure (months, max 120)</label>
+              <input type="number" class="form-control" formControlName="tenureMonths" placeholder="12"/>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" formControlName="autoRenew"/>
+                <span>Auto-renew on maturity</span>
+              </label>
+            </div>
+            <div class="flex gap-md" style="justify-content:flex-end">
+              <button type="button" class="btn btn-secondary" (click)="showCreate.set(false)">Cancel</button>
+              <button type="submit" class="btn btn-primary" [disabled]="creating()">
+                @if (creating()) { <span class="spinner"></span> } Create FD
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }

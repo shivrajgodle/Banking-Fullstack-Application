@@ -1,0 +1,317 @@
+<div class="animate-fade-in">
+  <div class="page-header flex-between">
+    <div>
+      <h1>Transactions</h1>
+      <p>Transfer money and view your transaction history</p>
+    </div>
+    <div class="flex gap-md">
+      <button class="btn btn-secondary" (click)="openPanel('withdraw')">Withdraw</button>
+      <button class="btn btn-primary" (click)="openPanel('transfer')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 6L4 10l4 4M16 6l4 4-4 4M14 4l-4 16"/>
+        </svg>
+        Transfer
+      </button>
+    </div>
+  </div>
+
+  <!-- Account Selector -->
+  <div class="card mb-lg">
+    <div class="flex gap-md" style="flex-wrap:wrap;align-items:center">
+      <span class="form-label" style="margin:0">Select Account:</span>
+      @for (acc of accounts(); track acc.id) {
+        <button class="account-tab" [class.active]="selectedAccount()?.id === acc.id"
+                (click)="selectAccount(acc)">
+          {{ acc.accountNumber }} — {{ acc.balance | currency:'INR':'symbol':'1.0-0' }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Content Area: either table or inline panel -->
+  <div class="content-area" [class.panel-open]="activePanel()">
+
+    <!-- Transactions Table -->
+    <div class="card table-section">
+      <div class="card-header">
+        <span class="card-title">Transaction History</span>
+        @if (selectedAccount()) {
+          <span class="text-muted" style="font-size:0.875rem">{{ selectedAccount()?.accountNumber }}</span>
+        }
+      </div>
+
+      @if (loadingTxns()) {
+        <div class="flex-center" style="padding:48px">
+          <span class="spinner" style="width:32px;height:32px;border-width:3px"></span>
+        </div>
+      } @else if (transactions().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">📊</div>
+          <h3>No transactions found</h3>
+          <p>Select an account to view its history</p>
+        </div>
+      } @else {
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Balance After</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (txn of transactions(); track txn.id) {
+                <tr>
+                  <td><span class="text-mono" style="font-size:0.8rem">{{ txn.transactionRef }}</span></td>
+                  <td>
+                    <div class="txn-type-cell">
+                      <span class="txn-dot" [class]="isCredit(txn.transactionType) ? 'dot-credit' : 'dot-debit'"></span>
+                      {{ txn.transactionType.replace('_', ' ') | titlecase }}
+                    </div>
+                  </td>
+                  <td style="color:var(--text-secondary);font-size:0.875rem">{{ txn.description || '—' }}</td>
+                  <td>
+                    <span class="amount" [class]="isCredit(txn.transactionType) ? 'positive' : 'negative'">
+                      {{ isCredit(txn.transactionType) ? '+' : '-' }}{{ txn.amount | currency:'INR':'symbol':'1.2-2' }}
+                    </span>
+                  </td>
+                  <td><span class="text-mono">{{ txn.balanceAfter | currency:'INR':'symbol':'1.2-2' }}</span></td>
+                  <td style="color:var(--text-secondary);font-size:0.875rem">{{ txn.createdAt | date:'dd MMM, hh:mm a' }}</td>
+                  <td><span class="badge" [class]="getStatusClass(txn.status)">{{ txn.status }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages() > 1) {
+          <div class="pagination">
+            <button class="btn btn-ghost btn-sm" [disabled]="currentPage() === 0" (click)="changePage(currentPage() - 1)">← Prev</button>
+            <span class="page-info">Page {{ currentPage() + 1 }} of {{ totalPages() }}</span>
+            <button class="btn btn-ghost btn-sm" [disabled]="currentPage() >= totalPages() - 1" (click)="changePage(currentPage() + 1)">Next →</button>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- ── Inline Action Panel (replaces popup OTP modal) ───────── -->
+    <!--
+      DESIGN RATIONALE: Real banking apps (HDFC NetBanking, ICICI iMobile, SBI YONO)
+      never use floating popup dialogs for OTP verification — they use full inline flows
+      or dedicated pages. This panel slides in alongside the table, keeping the user
+      contextually grounded and matching industry-standard UX patterns.
+    -->
+    @if (activePanel()) {
+      <div class="action-panel" [@slideIn]>
+        <div class="panel-header">
+          <div class="panel-title-row">
+            <div class="panel-icon" [class]="activePanel() === 'transfer' ? 'icon-transfer' : 'icon-withdraw'">
+              @if (activePanel() === 'transfer') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M8 6L4 10l4 4M16 6l4 4-4 4M14 4l-4 16"/>
+                </svg>
+              } @else {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                </svg>
+              }
+            </div>
+            <h3 class="panel-title">{{ activePanel() === 'transfer' ? 'Fund Transfer' : 'Withdraw Cash' }}</h3>
+          </div>
+          <button class="panel-close" (click)="closePanel()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+          <div class="step" [class.active]="panelStep() >= 1" [class.done]="panelStep() > 1">
+            <div class="step-dot">{{ panelStep() > 1 ? '✓' : '1' }}</div>
+            <span>Details</span>
+          </div>
+          <div class="step-line" [class.active]="panelStep() > 1"></div>
+          <div class="step" [class.active]="panelStep() >= 2">
+            <div class="step-dot">2</div>
+            <span>Verify OTP</span>
+          </div>
+        </div>
+
+        <!-- Step 1: Transaction Details -->
+        @if (panelStep() === 1) {
+          <form [formGroup]="transactionForm" class="panel-form">
+            <div class="form-group">
+              <label class="form-label">From Account</label>
+              <select class="form-control" formControlName="fromAccount">
+                @for (acc of accounts(); track acc.id) {
+                  <option [value]="acc.accountNumber">
+                    {{ acc.accountNumber }} ({{ acc.balance | currency:'INR':'symbol':'1.0-0' }})
+                  </option>
+                }
+              </select>
+            </div>
+
+            @if (activePanel() === 'transfer') {
+              <div class="form-group">
+                <label class="form-label">To Account Number</label>
+                <input type="text" class="form-control"
+                       [class.is-invalid]="isInvalidField('toAccount')"
+                       formControlName="toAccount"
+                       placeholder="ACC2500100002"/>
+                @if (isInvalidField('toAccount')) {
+                  <span class="form-error">Destination account is required</span>
+                }
+              </div>
+            }
+
+            <div class="form-group">
+              <label class="form-label">Amount (₹)</label>
+              <div class="amount-input-wrap">
+                <span class="amount-prefix">₹</span>
+                <input type="number" class="form-control amount-input"
+                       [class.is-invalid]="isInvalidField('amount')"
+                       formControlName="amount"
+                       placeholder="0.00" min="1"/>
+              </div>
+              @if (isInvalidField('amount')) {
+                <span class="form-error">Enter a valid amount (min ₹1)</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description <span class="optional-tag">Optional</span></label>
+              <input type="text" class="form-control" formControlName="description" placeholder="Rent payment, bill etc."/>
+            </div>
+
+            <!-- Summary preview -->
+            @if (transactionForm.get('amount')?.value) {
+              <div class="txn-preview">
+                <div class="preview-row">
+                  <span>Transaction Amount</span>
+                  <strong>{{ transactionForm.get('amount')?.value | currency:'INR':'symbol':'1.2-2' }}</strong>
+                </div>
+                <div class="preview-row">
+                  <span>Processing Fee</span>
+                  <strong class="text-muted">₹0.00</strong>
+                </div>
+                <div class="preview-divider"></div>
+                <div class="preview-row total">
+                  <span>Total Debit</span>
+                  <strong class="text-gold">{{ transactionForm.get('amount')?.value | currency:'INR':'symbol':'1.2-2' }}</strong>
+                </div>
+              </div>
+            }
+
+            <button type="button" class="btn btn-primary btn-full"
+                    (click)="proceedToOtp()"
+                    [disabled]="otpRequesting()">
+              @if (otpRequesting()) {
+                <span class="spinner"></span>
+                Sending OTP...
+              } @else {
+                Continue — Send OTP
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                </svg>
+              }
+            </button>
+          </form>
+        }
+
+        <!-- Step 2: OTP Verification (inline, no popup) -->
+        @if (panelStep() === 2) {
+          <div class="otp-section">
+            <div class="otp-sent-notice">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013 5.18 2 2 0 015 3h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L9.09 10.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+              </svg>
+              OTP sent to your registered email & mobile
+            </div>
+
+            <!-- Transaction summary (read-only recap before confirming) -->
+            <div class="confirm-summary">
+              <h4 class="summary-title">Confirm Transaction</h4>
+              <div class="summary-row">
+                <span>From</span>
+                <strong class="text-mono">{{ transactionForm.get('fromAccount')?.value }}</strong>
+              </div>
+              @if (activePanel() === 'transfer') {
+                <div class="summary-row">
+                  <span>To</span>
+                  <strong class="text-mono">{{ transactionForm.get('toAccount')?.value }}</strong>
+                </div>
+              }
+              <div class="summary-row">
+                <span>Amount</span>
+                <strong class="text-gold">{{ transactionForm.get('amount')?.value | currency:'INR':'symbol':'1.2-2' }}</strong>
+              </div>
+              @if (transactionForm.get('description')?.value) {
+                <div class="summary-row">
+                  <span>Remark</span>
+                  <strong>{{ transactionForm.get('description')?.value }}</strong>
+                </div>
+              }
+            </div>
+
+            <!-- OTP input boxes (5-digit box style, industry standard) -->
+            <div class="form-group">
+              <label class="form-label">Enter 6-digit OTP</label>
+              <div class="otp-boxes">
+                @for (i of otpDigits; track i; let idx = $index) {
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="1"
+                    class="otp-box"
+                    [class.filled]="otpValues[idx]"
+                    [class.is-invalid]="otpError()"
+                    [id]="'otp-box-' + idx"
+                    [value]="otpValues[idx]"
+                    (input)="onOtpInput($event, idx)"
+                    (keydown)="onOtpKeydown($event, idx)"
+                    (paste)="onOtpPaste($event)"
+                  />
+                }
+              </div>
+              @if (otpError()) {
+                <span class="form-error">{{ otpError() }}</span>
+              }
+            </div>
+
+            <div class="otp-timer">
+              @if (otpCountdown() > 0) {
+                Resend OTP in <strong>{{ otpCountdown() }}s</strong>
+              } @else {
+                <button type="button" class="btn btn-ghost btn-sm" (click)="resendOtp()">
+                  Resend OTP
+                </button>
+              }
+            </div>
+
+            <div class="panel-actions">
+              <button type="button" class="btn btn-secondary" (click)="goBackToDetails()">
+                ← Back
+              </button>
+              <button type="button" class="btn btn-primary" (click)="submitTransaction()"
+                      [disabled]="submitting() || getFullOtp().length < 6">
+                @if (submitting()) {
+                  <span class="spinner"></span>
+                  Processing...
+                } @else {
+                  {{ activePanel() === 'transfer' ? 'Confirm Transfer' : 'Confirm Withdrawal' }}
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

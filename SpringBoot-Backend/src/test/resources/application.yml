@@ -1,0 +1,56 @@
+server:
+  port: 0
+  servlet:
+    context-path: /api/v1
+
+spring:
+  application:
+    name: banking-backend-test
+
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+
+  flyway:
+    enabled: false   # Use Hibernate DDL for tests
+
+  mail:
+    host: localhost
+    port: 25
+    username: test
+    password: test
+
+  cache:
+    type: none
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 86400000
+  refresh-expiration: 604800000
+
+banking:
+  transaction:
+    daily-limit: 1000000.00
+    single-limit: 200000.00
+  otp:
+    expiry-minutes: 10
+    length: 6
+  interest:
+    savings-rate: 0.04
+    fixed-deposit-rate: 0.065
+
+logging:
+  level:
+    com.banking: WARN
+    org.springframework: WARN

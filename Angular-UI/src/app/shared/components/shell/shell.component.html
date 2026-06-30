@@ -1,0 +1,107 @@
+<div class="shell">
+      <!-- ── Sidebar ─────────────────────────────── -->
+      <aside class="sidebar" [class.collapsed]="sidebarCollapsed()">
+        <!-- Brand -->
+        <div class="sidebar-brand">
+          <div class="brand-logo">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="8" fill="url(#grad)"/>
+              <path d="M8 20L16 10L24 20H8Z" fill="#0a0e18" fill-opacity="0.9"/>
+              <path d="M10 20H22V23H10Z" fill="#0a0e18" fill-opacity="0.7"/>
+              <defs>
+                <linearGradient id="grad" x1="0" y1="0" x2="32" y2="32">
+                  <stop stop-color="#c9a84c"/>
+                  <stop offset="1" stop-color="#8a6f2e"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          @if (!sidebarCollapsed()) {
+            <div class="brand-text">
+              <span class="brand-name">NexBank</span>
+              <span class="brand-tag">Private Banking</span>
+            </div>
+          }
+          <button class="collapse-btn" (click)="toggleSidebar()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav">
+          <div class="nav-section-label" *ngIf="!sidebarCollapsed()">Main</div>
+          @for (item of navItems; track item.route) {
+            <a class="nav-item"
+               [routerLink]="item.route"
+               routerLinkActive="active"
+               [title]="item.label">
+              <span class="nav-icon" [innerHTML]="item.icon"></span>
+              @if (!sidebarCollapsed()) {
+                <span class="nav-label">{{ item.label }}</span>
+                @if (item.badge && item.badge > 0) {
+                  <span class="nav-badge">{{ item.badge }}</span>
+                }
+              }
+            </a>
+          }
+        </nav>
+
+        <!-- User profile at bottom -->
+        <div class="sidebar-user" *ngIf="user()">
+          <div class="user-avatar">
+            {{ getInitials() }}
+          </div>
+          @if (!sidebarCollapsed()) {
+            <div class="user-info">
+              <span class="user-name">{{ user()?.firstName }} {{ user()?.lastName }}</span>
+              <span class="user-role">{{ user()?.role | titlecase }}</span>
+            </div>
+            <button class="logout-btn" (click)="logout()" title="Logout">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+              </svg>
+            </button>
+          }
+        </div>
+      </aside>
+
+      <!-- ── Main Content ────────────────────────── -->
+      <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="mobile-menu-btn" (click)="toggleSidebar()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            </button>
+            <div class="topbar-greeting">
+              <span>Good {{ timeOfDay() }},</span>
+              <strong>{{ user()?.firstName }}</strong>
+            </div>
+          </div>
+          <div class="topbar-right">
+            <!-- Notification Bell -->
+            <a routerLink="/notifications" class="topbar-icon-btn" [class.has-badge]="unreadCount() > 0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
+              </svg>
+              @if (unreadCount() > 0) {
+                <span class="notification-dot">{{ unreadCount() > 9 ? '9+' : unreadCount() }}</span>
+              }
+            </a>
+            <!-- Profile -->
+            <a routerLink="/profile" class="topbar-avatar">
+              {{ getInitials() }}
+            </a>
+          </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="page-content">
+          <router-outlet />
+        </main>
+      </div>
+    </div>

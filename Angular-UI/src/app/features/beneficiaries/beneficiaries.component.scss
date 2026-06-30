@@ -1,0 +1,77 @@
+.bene-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: all var(--transition-normal);
+  animation: fadeIn 0.4s ease both;
+
+  &:hover {
+    border-color: var(--border-gold);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.bene-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.bene-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-muted));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #0a0e18;
+  flex-shrink: 0;
+}
+
+.bene-info {
+  flex: 1;
+}
+
+.bene-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.bene-nick {
+  font-size: 0.8125rem;
+  color: var(--gold-primary);
+  margin-top: 2px;
+}
+
+.bene-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+
+  span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  strong {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+  }
+}

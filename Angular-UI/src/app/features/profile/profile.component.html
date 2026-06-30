@@ -1,0 +1,117 @@
+<div class="animate-fade-in">
+  <div class="page-header">
+    <h1>My Profile</h1>
+    <p>Manage your personal information and security settings</p>
+  </div>
+
+  <div class="profile-grid">
+    <!-- Profile Card -->
+    <div class="profile-card">
+      <div class="profile-avatar">{{ getInitials() }}</div>
+      <div class="profile-name">{{ user()?.firstName }} {{ user()?.lastName }}</div>
+      <div class="profile-email">{{ user()?.email }}</div>
+      <div class="profile-badges">
+        <span class="badge" [class]="user()?.status === 'ACTIVE' ? 'badge-success' : 'badge-error'">{{ user()?.status
+          }}</span>
+        <span class="badge badge-info">{{ user()?.role | titlecase }}</span>
+        <span class="badge" [class]="user()?.kycStatus === 'APPROVED' ? 'badge-success' : 'badge-warning'">KYC: {{
+          user()?.kycStatus }}</span>
+      </div>
+      <div class="profile-meta">
+        <div><span>Member since</span><strong>{{ user()?.createdAt | date:'MMM yyyy' }}</strong></div>
+        <div><span>Last login</span><strong>{{ user()?.lastLogin | date:'dd MMM, hh:mm a' }}</strong></div>
+        <div><span>Phone</span><strong>{{ user()?.phoneNumber }}</strong></div>
+        <div><span>National ID</span><strong class="text-mono">{{ maskId(user()?.nationalId ?? '') }}</strong></div>
+      </div>
+    </div>
+
+    <!-- Edit Profile -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">Edit Profile</span></div>
+      <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-control"
+              formControlName="firstName" /></div>
+          <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-control"
+              formControlName="lastName" /></div>
+        </div>
+        <div class="form-group"><label class="form-label">Address</label><input type="text" class="form-control"
+            formControlName="address" /></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">City</label><input type="text" class="form-control"
+              formControlName="city" /></div>
+          <div class="form-group"><label class="form-label">State</label><input type="text" class="form-control"
+              formControlName="state" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">ZIP Code</label><input type="text" class="form-control"
+              formControlName="zipCode" /></div>
+          <div class="form-group"><label class="form-label">Country</label><input type="text" class="form-control"
+              formControlName="country" /></div>
+        </div>
+        <div class="flex" style="justify-content:flex-end;margin-top:8px">
+          <button type="submit" class="btn btn-primary" [disabled]="savingProfile()">
+            @if (savingProfile()) { <span class="spinner"></span> } Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Change Password -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">Change Password</span></div>
+      <form [formGroup]="pwdForm" (ngSubmit)="changePassword()">
+        <div class="form-group"><label class="form-label">Current Password</label><input type="password"
+            class="form-control" formControlName="currentPassword" /></div>
+        <div class="form-group"><label class="form-label">New Password</label><input type="password"
+            class="form-control" formControlName="newPassword" placeholder="Min 8 chars, uppercase, number, symbol" />
+        </div>
+        <div class="form-group"><label class="form-label">Confirm New Password</label><input type="password"
+            class="form-control" formControlName="confirmPassword" /></div>
+        @if (pwdError()) { <div class="form-error mb-md">{{ pwdError() }}</div> }
+        <div class="flex" style="justify-content:flex-end">
+          <button type="submit" class="btn btn-primary" [disabled]="changingPwd()">
+            @if (changingPwd()) { <span class="spinner"></span> } Change Password
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Security Info -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">Security & Verification</span></div>
+      <div class="security-list">
+        <div class="security-item">
+          <div>
+            <div class="security-label">Email Verification</div>
+            <div class="security-sub">{{ user()?.email }}</div>
+          </div>
+          <span class="badge" [class]="user()?.emailVerified ? 'badge-success' : 'badge-warning'">
+            {{ user()?.emailVerified ? 'Verified' : 'Pending' }}
+          </span>
+        </div>
+        <div class="security-item">
+          <div>
+            <div class="security-label">Phone Verification</div>
+            <div class="security-sub">{{ user()?.phoneNumber }}</div>
+          </div>
+          <span class="badge" [class]="user()?.phoneVerified ? 'badge-success' : 'badge-warning'">
+            {{ user()?.phoneVerified ? 'Verified' : 'Pending' }}
+          </span>
+        </div>
+        <div class="security-item">
+          <div>
+            <div class="security-label">KYC Status</div>
+            <div class="security-sub">Know Your Customer verification</div>
+          </div>
+          <span class="badge" [class]="user()?.kycStatus === 'APPROVED' ? 'badge-success' : 'badge-warning'">
+            {{ user()?.kycStatus | titlecase }}
+          </span>
+        </div>
+      </div>
+      <button class="btn btn-danger btn-sm" style="margin-top:20px;width:100%" (click)="logout()">
+        Sign Out of All Sessions
+      </button>
+    </div>
+  </div>
+</div>

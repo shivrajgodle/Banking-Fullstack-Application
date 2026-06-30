@@ -1,0 +1,124 @@
+<div class="animate-fade-in">
+      <div class="page-header flex-between">
+        <div>
+          <h1>Beneficiaries</h1>
+          <p>Manage your saved payees for quick transfers</p>
+        </div>
+        <button class="btn btn-primary" (click)="startAdd()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add Beneficiary
+        </button>
+      </div>
+
+      @if (loading()) {
+        <div class="flex-center" style="padding:64px">
+          <span class="spinner" style="width:36px;height:36px;border-width:3px"></span>
+        </div>
+      } @else if (benes().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">👥</div>
+          <h3>No beneficiaries yet</h3>
+          <p>Add a beneficiary to make faster transfers</p>
+          <button class="btn btn-primary" (click)="startAdd()">Add Now</button>
+        </div>
+      } @else {
+        <div class="grid-2 stagger">
+          @for (b of benes(); track b.id) {
+            <div class="bene-card">
+              <div class="bene-card-header">
+                <div class="bene-avatar">{{ b.beneficiaryName[0].toUpperCase() }}</div>
+                <div class="bene-info">
+                  <div class="bene-name">{{ b.beneficiaryName }}</div>
+                  @if (b.nickname) {
+                    <div class="bene-nick">"{{ b.nickname }}"</div>
+                  }
+                </div>
+                <button class="btn btn-danger btn-sm" (click)="delete(b)">Remove</button>
+              </div>
+              <div class="bene-meta">
+                <div class="meta-row">
+                  <span>Account</span>
+                  <strong class="text-mono">{{ b.accountNumber }}</strong>
+                </div>
+                <div class="meta-row">
+                  <span>IFSC</span>
+                  <strong class="text-mono">{{ b.ifscCode }}</strong>
+                </div>
+                @if (b.bankName) {
+                  <div class="meta-row">
+                    <span>Bank</span>
+                    <strong>{{ b.bankName }}</strong>
+                  </div>
+                }
+                <div class="meta-row">
+                  <span>Added</span>
+                  <strong>{{ b.createdAt | date:'dd MMM yyyy' }}</strong>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Add Beneficiary Modal -->
+    @if (showAdd()) {
+      <div class="modal-backdrop" (click)="showAdd.set(false)">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="flex-between mb-lg">
+            <h3 class="modal-title" style="margin:0">Add Beneficiary</h3>
+            <button class="btn btn-ghost btn-sm" (click)="showAdd.set(false)">✕</button>
+          </div>
+
+          @if (addStep() === 1) {
+            <div style="text-align:center;padding:16px 0">
+              <div style="font-size:3rem;margin-bottom:16px">🔐</div>
+              <h4 style="margin-bottom:8px">Authorization Required</h4>
+              <p style="color:var(--text-secondary);margin-bottom:24px;line-height:1.5">
+                An OTP will be sent to your registered email to verify adding a new beneficiary.
+              </p>
+              <button class="btn btn-primary btn-full" (click)="requestOtp()" [disabled]="otpRequesting()">
+                @if (otpRequesting()) { <span class="spinner"></span> }
+                Send OTP to Email
+              </button>
+            </div>
+          } @else {
+            <form [formGroup]="addForm" (ngSubmit)="addBene()">
+              <div class="form-group">
+                <label class="form-label">Beneficiary Name</label>
+                <input type="text" class="form-control" formControlName="beneficiaryName" placeholder="Priya Patel"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Account Number</label>
+                <input type="text" class="form-control" formControlName="accountNumber" placeholder="ACC2500100003"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">IFSC Code</label>
+                <input type="text" class="form-control" formControlName="ifscCode" placeholder="BANK0001"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Bank Name (optional)</label>
+                <input type="text" class="form-control" formControlName="bankName" placeholder="NexBank"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nickname (optional)</label>
+                <input type="text" class="form-control" formControlName="nickname" placeholder="e.g., Priya"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">OTP (from email)</label>
+                <input type="text" class="form-control" formControlName="otp" placeholder="6-digit OTP" maxlength="6"/>
+              </div>
+              <div class="flex gap-md" style="justify-content:flex-end">
+                <button type="button" class="btn btn-secondary" (click)="showAdd.set(false)">Cancel</button>
+                <button type="submit" class="btn btn-primary" [disabled]="adding()">
+                  @if (adding()) { <span class="spinner"></span> }
+                  Add Beneficiary
+                </button>
+              </div>
+            </form>
+          }
+        </div>
+      </div>
+    }

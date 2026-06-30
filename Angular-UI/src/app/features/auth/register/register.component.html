@@ -1,0 +1,161 @@
+<div class="auth-page">
+      <div class="auth-visual">
+        <div class="visual-content">
+          <div class="visual-logo">
+            <svg width="48" height="48" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="8" fill="url(#g2)"/>
+              <path d="M8 20L16 10L24 20H8Z" fill="#0a0e18" fill-opacity="0.9"/>
+              <path d="M10 20H22V23H10Z" fill="#0a0e18" fill-opacity="0.7"/>
+              <defs>
+                <linearGradient id="g2" x1="0" y1="0" x2="32" y2="32">
+                  <stop stop-color="#c9a84c"/><stop offset="1" stop-color="#8a6f2e"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span class="visual-brand">NexBank</span>
+          </div>
+          <h2 class="visual-headline">Join the<br>Future of<br>Banking.</h2>
+          <ul class="feature-list">
+            <li>✓ Zero-fee domestic transfers</li>
+            <li>✓ 4% interest on savings</li>
+            <li>✓ Instant loan approvals</li>
+            <li>✓ 256-bit encryption</li>
+          </ul>
+        </div>
+        <div class="visual-decoration">
+          <div class="deco-ring ring-1"></div>
+          <div class="deco-ring ring-2"></div>
+        </div>
+      </div>
+
+      <div class="auth-form-panel">
+        <div class="auth-form-container animate-fade-in">
+          <div class="auth-header">
+            <h1>Create account</h1>
+            <p>Open your NexBank account in minutes</p>
+          </div>
+
+          @if (success()) {
+            <div class="success-banner">
+              <div class="success-icon">✓</div>
+              <div>
+                <strong>Account created successfully!</strong>
+                <p>Please sign in with your credentials.</p>
+              </div>
+            </div>
+          } @else {
+
+          @if (errorMsg()) {
+            <div class="error-banner">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+              </svg>
+              {{ errorMsg() }}
+            </div>
+          }
+
+          <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">First Name</label>
+                <input type="text" class="form-control" [class.is-invalid]="isInvalid('firstName')"
+                       formControlName="firstName" placeholder="Rahul"/>
+                @if (isInvalid('firstName')) {
+                  <span class="form-error">First name is required</span>
+                }
+              </div>
+              <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <input type="text" class="form-control" [class.is-invalid]="isInvalid('lastName')"
+                       formControlName="lastName" placeholder="Sharma"/>
+                @if (isInvalid('lastName')) {
+                  <span class="form-error">Last name is required</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-control" [class.is-invalid]="isInvalid('email')"
+                     formControlName="email" placeholder="rahul@example.com"/>
+              @if (isInvalid('email')) {
+                <span class="form-error">Valid email is required</span>
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Mobile Number</label>
+                <input type="tel" class="form-control" [class.is-invalid]="isInvalid('phoneNumber')"
+                       formControlName="phoneNumber" placeholder="9876543210"/>
+                @if (isInvalid('phoneNumber')) {
+                  <span class="form-error">Valid 10-digit mobile required</span>
+                }
+              </div>
+              <div class="form-group">
+                <label class="form-label">Date of Birth</label>
+                <input type="date" class="form-control" [class.is-invalid]="isInvalid('dateOfBirth')"
+                       formControlName="dateOfBirth"/>
+                @if (isInvalid('dateOfBirth')) {
+                  <span class="form-error">Date of birth is required</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Aadhaar Number (12 digits)</label>
+              <input type="text" class="form-control" [class.is-invalid]="isInvalid('nationalId')"
+                     formControlName="nationalId" placeholder="123456789012" maxlength="12"/>
+              @if (isInvalid('nationalId')) {
+                <span class="form-error">12-digit Aadhaar number required</span>
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">City</label>
+                <input type="text" class="form-control" formControlName="city" placeholder="Mumbai"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">State</label>
+                <input type="text" class="form-control" formControlName="state" placeholder="Maharashtra"/>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-control" [class.is-invalid]="isInvalid('password')"
+                     formControlName="password" placeholder="Min 8 chars, uppercase, number, symbol"/>
+              @if (isInvalid('password')) {
+                <span class="form-error">
+                  {{ form.get('password')?.hasError('required') ? 'Password is required' : 'Password must have uppercase, lowercase, number and symbol' }}
+                </span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Confirm Password</label>
+              <input type="password" class="form-control" [class.is-invalid]="isInvalid('confirmPassword')"
+                     formControlName="confirmPassword" placeholder="Repeat password"/>
+              @if (isInvalid('confirmPassword')) {
+                <span class="form-error">Passwords do not match</span>
+              }
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full btn-lg" [disabled]="loading()">
+              @if (loading()) {
+                <span class="spinner"></span><span>Creating account...</span>
+              } @else {
+                <span>Create Account</span>
+              }
+            </button>
+          </form>
+
+          } <!-- end !success -->
+
+          <div class="auth-footer">
+            <p>Already have an account? <a routerLink="/login">Sign in</a></p>
+          </div>
+        </div>
+      </div>
+    </div>

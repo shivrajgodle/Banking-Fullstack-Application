@@ -1,0 +1,94 @@
+.accounts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-xl);
+}
+
+.account-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.4s ease both;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold-primary), var(--gold-muted));
+  }
+
+  &:hover {
+    border-color: var(--border-gold);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md), var(--shadow-gold);
+  }
+
+  &.frozen {
+    opacity: 0.7;
+    &::before { background: var(--error); }
+  }
+}
+
+.account-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.account-type-badge {
+  font-family: var(--font-display); font-size: 0.75rem; font-weight: 700;
+  color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em;
+}
+
+.account-card-number {
+  font-family: var(--font-mono); font-size: 1.1rem; font-weight: 500;
+  color: var(--text-primary); letter-spacing: 0.1em; margin-bottom: 20px;
+}
+
+.account-card-balance {
+  display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px;
+}
+
+.balance-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.balance-value {
+  font-family: var(--font-display); font-size: 1.75rem; font-weight: 700;
+  color: var(--text-primary); letter-spacing: -0.02em;
+}
+
+.account-card-meta {
+  display: flex; gap: 16px; margin-bottom: 20px;
+  padding: 12px; background: var(--bg-tertiary); border-radius: var(--radius-md);
+}
+
+.meta-item {
+  display: flex; flex-direction: column; gap: 2px; flex: 1;
+  span { font-size: 0.6875rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  strong { font-size: 0.8125rem; color: var(--text-primary); font-family: var(--font-mono); }
+}
+
+.account-card-actions { display: flex; gap: 8px; }
+
+.detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+
+.detail-item {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 12px; background: var(--bg-tertiary); border-radius: var(--radius-md);
+}
+
+.detail-label {
+  font-size: 0.6875rem; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.06em; font-family: var(--font-display);
+}
+
+.detail-value { font-size: 0.9375rem; color: var(--text-primary); font-weight: 500; }
+
+@media (max-width: 640px) {
+  .detail-grid { grid-template-columns: 1fr; }
+}

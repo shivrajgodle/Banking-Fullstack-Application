@@ -1,0 +1,153 @@
+<div class="animate-fade-in">
+      <div class="page-header flex-between">
+        <div>
+          <h1>Accounts</h1>
+          <p>Manage your bank accounts</p>
+        </div>
+        <button class="btn btn-primary" (click)="showCreateModal.set(true)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Open Account
+        </button>
+      </div>
+
+      <!-- Accounts Grid -->
+      @if (loading()) {
+        <div class="grid-2">
+          @for (i of [1,2,3]; track i) {
+            <div class="skeleton" style="height:200px;border-radius:16px"></div>
+          }
+        </div>
+      } @else if (accounts().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">🏦</div>
+          <h3>No accounts yet</h3>
+          <p>Open your first account to get started</p>
+          <button class="btn btn-primary" (click)="showCreateModal.set(true)">Open Account</button>
+        </div>
+      } @else {
+        <div class="accounts-grid stagger">
+          @for (acc of accounts(); track acc.id) {
+            <div class="account-card" [class.frozen]="acc.status === 'FROZEN'">
+              <div class="account-card-header">
+                <div class="account-type-badge">{{ acc.accountType | titlecase }}</div>
+                <span class="badge" [class]="getStatusClass(acc.status)">{{ acc.status }}</span>
+              </div>
+              <div class="account-card-number">{{ formatAccountNumber(acc.accountNumber) }}</div>
+              <div class="account-card-balance">
+                <span class="balance-label">Available Balance</span>
+                <span class="balance-value">{{ acc.balance | currency:'INR':'symbol':'1.2-2' }}</span>
+              </div>
+              <div class="account-card-meta">
+                <div class="meta-item">
+                  <span>IFSC</span>
+                  <strong>{{ acc.ifscCode }}</strong>
+                </div>
+                <div class="meta-item">
+                  <span>Interest</span>
+                  <strong>{{ (acc.interestRate * 100).toFixed(2) }}% p.a.</strong>
+                </div>
+                <div class="meta-item">
+                  <span>Opened</span>
+                  <strong>{{ acc.openedDate | date:'MMM yyyy' }}</strong>
+                </div>
+              </div>
+              <div class="account-card-actions">
+                <button class="btn btn-secondary btn-sm" (click)="selectAccount(acc)">
+                  View Details
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Create Account Modal -->
+    @if (showCreateModal()) {
+      <div class="modal-backdrop" (click)="showCreateModal.set(false)">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <h3 class="modal-title">Open New Account</h3>
+          <form [formGroup]="createForm" (ngSubmit)="createAccount()">
+            <div class="form-group">
+              <label class="form-label">Account Type</label>
+              <select class="form-control" formControlName="accountType">
+                <option value="SAVINGS">Savings Account (4% interest)</option>
+                <option value="CURRENT">Current Account (Business)</option>
+                <option value="SALARY">Salary Account</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nominee Name (Optional)</label>
+              <input type="text" class="form-control" formControlName="nomineeName" placeholder="Full name"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nominee Relation</label>
+              <input type="text" class="form-control" formControlName="nomineeRelation" placeholder="e.g., Spouse, Mother"/>
+            </div>
+            <div class="flex gap-md" style="justify-content:flex-end;margin-top:24px">
+              <button type="button" class="btn btn-secondary" (click)="showCreateModal.set(false)">Cancel</button>
+              <button type="submit" class="btn btn-primary" [disabled]="creating()">
+                @if (creating()) { <span class="spinner"></span> }
+                Open Account
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Account Detail Modal -->
+    @if (selectedAccount()) {
+      <div class="modal-backdrop" (click)="selectedAccount.set(null)">
+        <div class="modal" style="max-width:540px" (click)="$event.stopPropagation()">
+          <div class="flex-between mb-md">
+            <h3 class="modal-title" style="margin:0">Account Details</h3>
+            <button class="btn btn-ghost btn-sm" (click)="selectedAccount.set(null)">✕</button>
+          </div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Account Number</span>
+              <span class="detail-value text-mono">{{ selectedAccount()?.accountNumber }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Account Type</span>
+              <span class="detail-value">{{ selectedAccount()?.accountType | titlecase }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Balance</span>
+              <span class="detail-value text-gold">{{ selectedAccount()?.balance | currency:'INR':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Available Balance</span>
+              <span class="detail-value">{{ selectedAccount()?.availableBalance | currency:'INR':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">IFSC Code</span>
+              <span class="detail-value text-mono">{{ selectedAccount()?.ifscCode }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Branch Code</span>
+              <span class="detail-value text-mono">{{ selectedAccount()?.branchCode }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Daily Transfer Limit</span>
+              <span class="detail-value">{{ selectedAccount()?.dailyLimit | currency:'INR':'symbol':'1.0-0' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Interest Rate</span>
+              <span class="detail-value">{{ ((selectedAccount()?.interestRate ?? 0) * 100).toFixed(2) }}% p.a.</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Opened Date</span>
+              <span class="detail-value">{{ selectedAccount()?.openedDate | date:'dd MMM yyyy' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Nominee</span>
+              <span class="detail-value">{{ selectedAccount()?.nomineeName || '—' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }

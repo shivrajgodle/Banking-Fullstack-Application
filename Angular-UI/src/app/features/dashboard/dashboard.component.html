@@ -1,0 +1,154 @@
+<div class="animate-fade-in">
+      <!-- ── Summary Stats ──────────────────── -->
+      <div class="stats-grid stagger">
+        <!-- Total Balance -->
+        <div class="stat-card primary-card">
+          <div class="stat-card-header">
+            <span class="stat-label">Total Balance</span>
+            <div class="stat-icon gold">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-value-large">
+            @if (loading()) {
+              <div class="skeleton" style="height:40px;width:180px;border-radius:8px"></div>
+            } @else {
+              {{ dash()?.totalBalance | currency:'INR':'symbol':'1.2-2' }}
+            }
+          </div>
+          <div class="stat-sub">Across {{ dash()?.totalAccounts }} account(s)</div>
+        </div>
+
+        <!-- Active Loans -->
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <span class="stat-label">Loan Outstanding</span>
+            <div class="stat-icon warning">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-value">
+            {{ dash()?.totalLoanOutstanding | currency:'INR':'symbol':'1.2-2' }}
+          </div>
+          <div class="stat-sub">{{ dash()?.activeLoans }} active loan(s)</div>
+        </div>
+
+        <!-- Fixed Deposits -->
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <span class="stat-label">Fixed Deposits</span>
+            <div class="stat-icon info">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-value">
+            {{ dash()?.totalFdAmount | currency:'INR':'symbol':'1.2-2' }}
+          </div>
+          <div class="stat-sub">{{ dash()?.activeFds }} active FD(s)</div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="stat-card actions-card">
+          <span class="stat-label">Quick Actions</span>
+          <div class="quick-actions">
+            <a routerLink="/transactions" class="quick-action">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 6L4 10l4 4M16 6l4 4-4 4M14 4l-4 16"/>
+              </svg>
+              Transfer
+            </a>
+            <a routerLink="/loans" class="quick-action">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              </svg>
+              Apply Loan
+            </a>
+            <a routerLink="/fixed-deposits" class="quick-action">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Open FD
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Main Content Grid ───────────────── -->
+      <div class="content-grid">
+        <!-- Accounts List -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">My Accounts</span>
+            <a routerLink="/accounts" class="btn btn-ghost btn-sm">View All</a>
+          </div>
+          @if (loading()) {
+            @for (i of [1,2]; track i) {
+              <div class="skeleton" style="height:72px;border-radius:10px;margin-bottom:10px"></div>
+            }
+          } @else if (dash()?.accounts?.length === 0) {
+            <div class="empty-state" style="padding:32px">
+              <p>No accounts yet</p>
+              <a routerLink="/accounts" class="btn btn-primary btn-sm">Open Account</a>
+            </div>
+          } @else {
+            <div class="account-list">
+              @for (acc of dash()?.accounts; track acc.id) {
+                <div class="account-item">
+                  <div class="account-icon">
+                    {{ acc.accountType === 'SAVINGS' ? '💰' : acc.accountType === 'CURRENT' ? '🏦' : '💳' }}
+                  </div>
+                  <div class="account-details">
+                    <div class="account-number">{{ acc.accountNumber }}</div>
+                    <div class="account-type">{{ acc.accountType | titlecase }} Account</div>
+                  </div>
+                  <div class="account-balance">
+                    <div class="balance-amount">{{ acc.balance | currency:'INR':'symbol':'1.0-0' }}</div>
+                    <span class="badge" [class]="getAccountStatusClass(acc.status)">{{ acc.status }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Transactions</span>
+            <a routerLink="/transactions" class="btn btn-ghost btn-sm">View All</a>
+          </div>
+          @if (loading()) {
+            @for (i of [1,2,3]; track i) {
+              <div class="skeleton" style="height:56px;border-radius:8px;margin-bottom:8px"></div>
+            }
+          } @else if (!dash()?.recentTransactions?.length) {
+            <div class="empty-state" style="padding:24px">
+              <p>No transactions yet</p>
+            </div>
+          } @else {
+            <div class="txn-list">
+              @for (txn of dash()?.recentTransactions?.slice(0,6); track txn.id) {
+                <div class="txn-item">
+                  <div class="txn-icon" [class]="getTxnIconClass(txn.transactionType)">
+                    {{ getTxnIcon(txn.transactionType) }}
+                  </div>
+                  <div class="txn-details">
+                    <div class="txn-type">{{ txn.transactionType.replace('_', ' ') | titlecase }}</div>
+                    <div class="txn-ref">{{ txn.transactionRef }}</div>
+                  </div>
+                  <div class="txn-amount" [class.positive]="isCredit(txn.transactionType)" [class.negative]="!isCredit(txn.transactionType)">
+                    {{ isCredit(txn.transactionType) ? '+' : '-' }}{{ txn.amount | currency:'INR':'symbol':'1.0-0' }}
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>

@@ -1,0 +1,141 @@
+<div class="auth-page">
+      <!-- Left Panel: Brand & Visual -->
+      <div class="auth-visual">
+        <div class="visual-content">
+          <div class="visual-logo">
+            <svg width="48" height="48" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="8" fill="url(#g1)"/>
+              <path d="M8 20L16 10L24 20H8Z" fill="#0a0e18" fill-opacity="0.9"/>
+              <path d="M10 20H22V23H10Z" fill="#0a0e18" fill-opacity="0.7"/>
+              <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="32" y2="32">
+                  <stop stop-color="#c9a84c"/><stop offset="1" stop-color="#8a6f2e"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span class="visual-brand">NexBank</span>
+          </div>
+          <h2 class="visual-headline">Banking<br>Redefined.</h2>
+          <p class="visual-sub">Manage your wealth, transfers, and investments — all in one private, secure platform.</p>
+          <div class="visual-stats">
+            <div class="stat">
+              <span class="stat-value">₹2.4T+</span>
+              <span class="stat-label">Assets Managed</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">4.2M+</span>
+              <span class="stat-label">Active Customers</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">99.99%</span>
+              <span class="stat-label">Uptime</span>
+            </div>
+          </div>
+        </div>
+        <div class="visual-decoration">
+          <div class="deco-ring ring-1"></div>
+          <div class="deco-ring ring-2"></div>
+          <div class="deco-ring ring-3"></div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Login Form -->
+      <div class="auth-form-panel">
+        <div class="auth-form-container animate-fade-in">
+          <div class="auth-header">
+            <h1>Welcome back</h1>
+            <p>Sign in to your NexBank account</p>
+          </div>
+
+          <!-- Global Error Banner -->
+          @if (errorMsg()) {
+            <div class="error-banner">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              {{ errorMsg() }}
+            </div>
+          }
+
+          <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <!-- Email -->
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input
+                type="email"
+                class="form-control"
+                [class.is-invalid]="isInvalid('email')"
+                formControlName="email"
+                placeholder="rahul@example.com"
+                autocomplete="email"
+              />
+              @if (isInvalid('email')) {
+                <span class="form-error">
+                  {{ form.get('email')?.hasError('required') ? 'Email is required' : 'Enter a valid email address' }}
+                </span>
+              }
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+              <div class="label-row">
+                <label class="form-label">Password</label>
+                <a href="#" class="forgot-link">Forgot password?</a>
+              </div>
+              <div class="input-with-icon">
+                <input
+                  [type]="showPassword() ? 'text' : 'password'"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('password')"
+                  formControlName="password"
+                  placeholder="••••••••"
+                  autocomplete="current-password"
+                />
+                <button type="button" class="eye-btn" (click)="togglePassword()">
+                  @if (showPassword()) {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  }
+                </button>
+              </div>
+              @if (isInvalid('password')) {
+                <span class="form-error">Password is required</span>
+              }
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn btn-primary btn-full btn-lg" [disabled]="loading()">
+              @if (loading()) {
+                <span class="spinner"></span>
+                <span>Signing in...</span>
+              } @else {
+                <span>Sign In</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                </svg>
+              }
+            </button>
+          </form>
+
+          <div class="auth-footer">
+            <p>Don't have an account? <a routerLink="/register">Create one free</a></p>
+          </div>
+
+          <!-- Demo Credentials -->
+          <div class="demo-box">
+            <span class="demo-label">Demo credentials</span>
+            <div class="demo-creds">
+              <div><span>Admin:</span> admin&#64;banking.com / Admin&#64;123</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

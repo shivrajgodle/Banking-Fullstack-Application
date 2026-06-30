@@ -1,0 +1,137 @@
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.stat-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: all var(--transition-normal);
+  animation: fadeIn 0.4s ease both;
+
+  &:hover {
+    border-color: var(--border-gold);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.primary-card {
+  background: linear-gradient(135deg, #0d1f3c 0%, #0d1421 100%);
+  border-color: var(--border-gold);
+  box-shadow: inset 0 0 40px rgba(201,168,76,0.05);
+}
+
+.stat-card-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+}
+
+.stat-label {
+  font-size: 0.75rem; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--font-display);
+}
+
+.stat-icon {
+  width: 36px; height: 36px; border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+
+  &.gold    { background: var(--gold-glow); color: var(--gold-primary); }
+  &.warning { background: var(--warning-bg); color: var(--warning); }
+  &.info    { background: var(--info-bg); color: var(--info); }
+  &.success { background: var(--success-bg); color: var(--success); }
+}
+
+.stat-value-large {
+  font-family: var(--font-display); font-size: 2rem; font-weight: 700;
+  color: var(--gold-primary); margin-bottom: 6px; letter-spacing: -0.02em;
+}
+
+.stat-value {
+  font-family: var(--font-mono); font-size: 1.4rem; font-weight: 600;
+  color: var(--text-primary); margin-bottom: 6px;
+}
+
+.stat-sub { font-size: 0.8125rem; color: var(--text-muted); }
+
+.actions-card { display: flex; flex-direction: column; gap: 12px; }
+
+.quick-actions { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+.quick-action {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: var(--radius-md);
+  background: var(--bg-tertiary); border: 1px solid var(--border-subtle);
+  color: var(--text-secondary); font-size: 0.875rem; font-weight: 500;
+  text-decoration: none; transition: all var(--transition-fast);
+
+  &:hover {
+    border-color: var(--gold-muted); color: var(--gold-primary);
+    background: var(--gold-glow);
+  }
+}
+
+.content-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xl);
+}
+
+/* Account list */
+.account-list { display: flex; flex-direction: column; gap: 8px; }
+
+.account-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; border-radius: var(--radius-md);
+  background: var(--bg-tertiary); border: 1px solid var(--border-subtle);
+  transition: border-color var(--transition-fast);
+  &:hover { border-color: var(--border-gold); }
+}
+
+.account-icon { font-size: 1.5rem; }
+
+.account-details { flex: 1; }
+
+.account-number { font-family: var(--font-mono); font-size: 0.875rem; color: var(--text-primary); font-weight: 500; }
+
+.account-type { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+.account-balance { text-align: right; }
+
+.balance-amount { font-family: var(--font-mono); font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+
+/* Transaction list */
+.txn-list { display: flex; flex-direction: column; gap: 6px; }
+
+.txn-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+  &:hover { background: var(--bg-tertiary); }
+}
+
+.txn-icon {
+  width: 36px; height: 36px; border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+  &.credit { background: var(--success-bg); }
+  &.debit  { background: var(--error-bg);   }
+}
+
+.txn-details { flex: 1; }
+.txn-type { font-size: 0.875rem; font-weight: 500; color: var(--text-primary); }
+.txn-ref  { font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); }
+
+.txn-amount {
+  font-family: var(--font-mono); font-size: 0.9375rem; font-weight: 600;
+  &.positive { color: var(--success); }
+  &.negative { color: var(--error);   }
+}
+
+@media (max-width: 1200px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .stats-grid, .content-grid { grid-template-columns: 1fr; }
+}

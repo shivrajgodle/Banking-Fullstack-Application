@@ -1,0 +1,241 @@
+<div class="animate-fade-in">
+  <div class="page-header flex-between">
+    <div>
+      <h1>Loans</h1>
+      <p>Apply for loans and manage your EMI payments</p>
+    </div>
+    <div class="flex gap-md">
+      <button class="btn btn-secondary" (click)="showCalc.set(true)">EMI Calculator</button>
+      <button class="btn btn-primary" (click)="showApply.set(true)">Apply for Loan</button>
+    </div>
+  </div>
+
+  <!-- Interest Rate Banner -->
+  <div class="rate-banner">
+    @for (rate of loanRates; track rate.type) {
+    <div class="rate-item">
+      <span class="rate-type">{{ rate.type }}</span>
+      <span class="rate-value">{{ rate.rate }}</span>
+    </div>
+    }
+  </div>
+
+  <!-- Loans List -->
+  @if (loading()) {
+  <div class="flex-center" style="padding:64px">
+    <span class="spinner" style="width:36px;height:36px;border-width:3px"></span>
+  </div>
+  } @else if (loans().length === 0) {
+  <div class="empty-state">
+    <div class="empty-icon">🏛️</div>
+    <h3>No loans yet</h3>
+    <p>Apply for a loan to get started</p>
+    <button class="btn btn-primary" (click)="showApply.set(true)">Apply Now</button>
+  </div>
+  } @else {
+  <div class="loans-list stagger">
+    @for (loan of loans(); track loan.id) {
+    <div class="loan-card">
+      <div class="loan-header">
+        <div>
+          <div class="loan-number text-mono">{{ loan.loanNumber }}</div>
+          <div class="loan-type">{{ loan.loanType | titlecase }} Loan</div>
+        </div>
+        <span class="badge" [class]="getLoanStatusClass(loan.status)">{{ loan.status }}</span>
+      </div>
+      <div class="loan-amounts">
+        <div class="loan-amount-item">
+          <span>Principal</span>
+          <strong>{{ loan.principalAmount | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+        <div class="loan-amount-item">
+          <span>Outstanding</span>
+          <strong class="text-warning">{{ loan.outstandingAmount | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+        <div class="loan-amount-item">
+          <span>Monthly EMI</span>
+          <strong class="text-gold">{{ loan.emiAmount | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+        <div class="loan-amount-item">
+          <span>Paid</span>
+          <strong class="text-success">{{ loan.paidAmount | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+      </div>
+      @if (loan.status === 'ACTIVE' || loan.status === 'OVERDUE') {
+      <div class="loan-progress">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="getProgress(loan)"></div>
+        </div>
+        <div class="progress-meta flex-between">
+          <span>{{ getProgress(loan).toFixed(0) }}% repaid</span>
+          @if (loan.nextEmiDate) {
+          <span>Next EMI: {{ loan.nextEmiDate | date:'dd MMM yyyy' }}</span>
+          }
+        </div>
+      </div>
+      @if (loan.overdueDays > 0) {
+      <div class="overdue-warning">
+        ⚠️ {{ loan.overdueDays }} days overdue — penalty: {{ loan.overdueAmount | currency:'INR':'symbol':'1.0-0' }}
+      </div>
+      }
+      <button class="btn btn-primary btn-sm" style="margin-top:12px" (click)="openRepay(loan)">
+        Pay EMI
+      </button>
+      }
+    </div>
+    }
+  </div>
+  }
+</div>
+
+<!-- EMI Calculator Modal -->
+@if (showCalc()) {
+<div class="modal-backdrop" (click)="showCalc.set(false)">
+  <div class="modal" style="max-width:520px" (click)="$event.stopPropagation()">
+    <div class="flex-between mb-lg">
+      <h3 class="modal-title" style="margin:0">EMI Calculator</h3>
+      <button class="btn btn-ghost btn-sm" (click)="showCalc.set(false)">✕</button>
+    </div>
+    <form [formGroup]="calcForm" (ngSubmit)="calculateEmi()">
+      <div class="form-group">
+        <label class="form-label">Loan Amount (₹)</label>
+        <input type="number" class="form-control" formControlName="principal" placeholder="500000" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Annual Interest Rate (%)</label>
+          <input type="number" class="form-control" formControlName="rate" placeholder="12" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tenure (months)</label>
+          <input type="number" class="form-control" formControlName="tenure" placeholder="60" />
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Calculate EMI</button>
+    </form>
+    @if (emiResult()) {
+    <div class="emi-result">
+      <div class="emi-highlight">
+        <span class="emi-label">Monthly EMI</span>
+        <span class="emi-value">{{ emiResult()!.monthlyEmi | currency:'INR':'symbol':'1.2-2' }}</span>
+      </div>
+      <div class="emi-breakdown">
+        <div class="breakdown-item">
+          <span>Principal</span>
+          <strong>{{ emiResult()!.principal | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+        <div class="breakdown-item">
+          <span>Total Interest</span>
+          <strong class="text-warning">{{ emiResult()!.totalInterest | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+        <div class="breakdown-item">
+          <span>Total Payable</span>
+          <strong>{{ emiResult()!.totalPayable | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+</div>
+}
+
+<!-- Apply Loan Modal -->
+@if (showApply()) {
+<div class="modal-backdrop" (click)="showApply.set(false)">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="flex-between mb-lg">
+      <h3 class="modal-title" style="margin:0">Apply for Loan</h3>
+      <button class="btn btn-ghost btn-sm" (click)="showApply.set(false)">✕</button>
+    </div>
+    <form [formGroup]="applyForm" (ngSubmit)="applyLoan()">
+      <div class="form-group">
+        <label class="form-label">Loan Type</label>
+        <select class="form-control" formControlName="loanType">
+          @for (r of loanRates; track r.type) {
+          <option [value]="r.type">{{ r.type | titlecase }} — {{ r.rate }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Amount (₹)</label>
+          <input type="number" class="form-control" formControlName="principalAmount" placeholder="200000" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tenure (months)</label>
+          <input type="number" class="form-control" formControlName="tenureMonths" placeholder="24" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Credit Account</label>
+        <select class="form-control" formControlName="accountNumber">
+          @for (acc of accounts(); track acc.id) {
+          <option [value]="acc.accountNumber">{{ acc.accountNumber }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Purpose (optional)</label>
+        <input type="text" class="form-control" formControlName="purpose" placeholder="Home renovation" />
+      </div>
+      <div class="flex gap-md" style="justify-content:flex-end">
+        <button type="button" class="btn btn-secondary" (click)="showApply.set(false)">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="applying()">
+          @if (applying()) { <span class="spinner"></span> }
+          Submit Application
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+}
+
+<!-- Repay Modal -->
+@if (repayLoan()) {
+<div class="modal-backdrop" (click)="repayLoan.set(null)">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="flex-between mb-lg">
+      <h3 class="modal-title" style="margin:0">Pay EMI — {{ repayLoan()?.loanNumber }}</h3>
+      <button class="btn btn-ghost btn-sm" (click)="repayLoan.set(null)">✕</button>
+    </div>
+    @if (repayStep() === 1) {
+    <div class="otp-step" style="text-align:center;padding:16px 0">
+      <div style="font-size:2.5rem;margin-bottom:16px">🔐</div>
+      <p style="color:var(--text-secondary);margin-bottom:24px">EMI amount: {{ repayLoan()?.emiAmount |
+        currency:'INR':'symbol':'1.2-2' }}</p>
+      <button class="btn btn-primary btn-full" (click)="requestRepayOtp()" [disabled]="otpRequesting()">
+        @if (otpRequesting()) { <span class="spinner"></span> }
+        Send OTP to Email
+      </button>
+    </div>
+    } @else {
+    <form [formGroup]="repayForm" (ngSubmit)="submitRepay()">
+      <div class="form-group">
+        <label class="form-label">Debit Account</label>
+        <select class="form-control" formControlName="accountNumber">
+          @for (acc of accounts(); track acc.id) {
+          <option [value]="acc.accountNumber">{{ acc.accountNumber }} ({{ acc.balance | currency:'INR':'symbol':'1.0-0'
+            }})</option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount</label>
+        <input type="number" class="form-control" formControlName="amount" [placeholder]="repayLoan()?.emiAmount" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">OTP</label>
+        <input type="text" class="form-control" formControlName="otp" placeholder="6-digit OTP" maxlength="6" />
+      </div>
+      <div class="flex gap-md" style="justify-content:flex-end">
+        <button type="button" class="btn btn-secondary" (click)="repayLoan.set(null)">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="repaying()">
+          @if (repaying()) { <span class="spinner"></span> }
+          Pay EMI
+        </button>
+      </div>
+    </form>
+    }
+  </div>
+</div>
+}
